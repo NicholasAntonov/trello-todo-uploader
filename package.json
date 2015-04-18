@@ -1,0 +1,13 @@
+{
+  "name": "trello-todo-uploader",
+  "version": "0.0.6",
+  "description": "Parse a folder for todos and upload them to trello",
+  "dependencies": {
+    "node-trello": "^1.0.1",
+    "replace": "^0.3.0"
+  },
+  "repository": { 
+  	"type": "git", 
+  	"url": "https://github.com/NicholasAntonov/trello-todo-uploader.git"
+  }
+}
