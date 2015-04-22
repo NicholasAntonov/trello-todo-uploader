@@ -11,6 +11,10 @@ var stream = require('stream'),
     t = new Trello(appKey, userToken),
     commentRegex = /\/\/TODO((?!.*trello\.com))/;
 
+function quote(str) {
+    return str.replace(/(?=[\/\\^$*+?.()|{}[\]])/g, "\\");
+}
+
 
 function processLine(line, file, number) {
     var cardDesc = '',
@@ -19,7 +23,7 @@ function processLine(line, file, number) {
 
     if (commentRegex.test(line)) {
         indexOfRegex = line.search(commentRegex);
-        line = line.slice(indexOfRegex + '\/\/TODO:'.length).trim();
+        line = line.slice(indexOfRegex + '\/\/TODO'.length).trim();
 
         // Check if the comment starts with a username in parens
         if (/\(.*\)/.test(line)) {
@@ -41,7 +45,7 @@ function processLine(line, file, number) {
             if (err) throw err;
 
             replace({
-                regex: "([ \t]*\/\/TODO[^\n\r\n]*" + line + ")([\r\n\n])",
+                regex: "([ \t]*\/\/TODO[^\n\r\n]*" + quote(line) + ")([\r\n\n])",
                 replacement: "$1 " + data.shortUrl + "$2",
                 paths: [file],
                 recursive: true,
@@ -49,7 +53,7 @@ function processLine(line, file, number) {
             });
         });
 
-
+        
 
     }
 }
