@@ -9,38 +9,39 @@ var stream = require('stream'),
     userToken = config.userToken,
     listid = config.listid,
     t = new Trello(appKey, userToken),
-    commentRegex = /\/\/.-TODO((?!.*trello\.com))/;
+    commentRegex = /\/\/TODO((?!.*trello\.com))/;
 
 
 function processLine(line, file, number) {
     var cardDesc = '',
         indexOfRegex,
-        code,
-        comment,
         username;
 
     if (commentRegex.test(line)) {
         indexOfRegex = line.search(commentRegex);
-        line = line.slice(indexOfRegex + 2);
-        code = line[0];
-        line = line.slice(line.indexOf('(') + 1);
-        username = line.slice(0, line.indexOf(')'));
-        comment = line.slice(line.indexOf(')') + 1).trim();
+        line = line.slice(indexOfRegex + '\/\/TODO:'.length).trim();
 
-        
-        cardDesc += 'Filed by ' + username + '\n';
-        cardDesc += 'Code: ' + code + '\n';
+        // Check if the comment starts with a username in parens
+        if (/\(.*\)/.test(line)) {
+            line = line.slice(line.indexOf('(') + 1);
+            username = line.slice(0, line.indexOf(')'));
+
+            cardDesc += 'Filed by ' + username + '\n';
+
+            line = line.slice(line.indexOf(')') + 1).trim();
+        }
+
         cardDesc += 'Location: ' + file + ':' + number + '\n';
 
         t.post("/1/cards", {
-            name: comment,
+            name: line,
             desc: cardDesc,
             idList: listid
         }, function (err, data) {
             if (err) throw err;
 
             replace({
-                regex: "([ \t]*\/\/.-TODO[^\n\r\n]*" + comment + ")([\r\n\n])",
+                regex: "([ \t]*\/\/TODO[^\n\r\n]*" + line + ")([\r\n\n])",
                 replacement: "$1 " + data.shortUrl + "$2",
                 paths: [file],
                 recursive: true,
